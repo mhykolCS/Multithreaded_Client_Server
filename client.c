@@ -15,6 +15,7 @@ int main(int argc, char** argv[]){
 
     printf("%d\n", sh_ptr[0]);
     printf("%d\n", sh_ptr[1]);
+    printf("%ld\n", sizeof(int)*11);
 
     shmctl(key, IPC_RMID, NULL);
 
