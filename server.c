@@ -1,32 +1,21 @@
-#include <stdio.h>
-#include <sys/ipc.h>
-#include <sys/shm.h>
-#include <string.h>
-#define BLOCK_SIZE 352
+#include "shm_func.h"
+
 
 int main(int argc, char** argv[]){
 
+    key_t key = get_file_key();
+    if(key == 0){
+        return(0);
+    }
+
+    char* sh_ptr = create_shared_ptr(key);
+    if(sh_ptr == (char *)0){
+        return(0);
+    }
+
+    strncpy(sh_ptr, "i am a test program", BLOCK_SIZE);
     
-    key_t key = ftok("sh_mem.key", 0);
-    if(key == -1){
-        printf("Error reading 'sh_mem.key' file\n");
-        return(0);
-    }
-
-
-    int block_id = shmget(key, BLOCK_SIZE, 0666 | IPC_CREAT);
-    if(block_id == -1){
-        printf("Error creating block ID\n");
-        return(0);
-    }
-
-    char* sh_ptr = shmat(block_id, NULL, 0);
-    if(sh_ptr == (char *)-1){
-        printf("Error binding block to address space\n");
-        return(0);
-    }
-
-    strncpy(sh_ptr, "testing", BLOCK_SIZE);
+    shmctl(key, IPC_RMID, NULL);
 
     return(0);
 }

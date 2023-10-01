@@ -1,6 +1,6 @@
-program: client.c server.c
-	gcc client.c -o client
-	gcc server.c -o server
+program: client.c server.c shm_func.h shm_func.c
+	gcc client.c shm_func.c -o client
+	gcc server.c shm_func.c -o server
 
 clean:
 	rm client
