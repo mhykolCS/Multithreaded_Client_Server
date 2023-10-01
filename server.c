@@ -8,12 +8,13 @@ int main(int argc, char** argv[]){
         return(0);
     }
 
-    char* sh_ptr = create_shared_ptr(key);
-    if(sh_ptr == (char *)0){
+    int* sh_ptr = create_shared_ptr(key);
+    if(sh_ptr == (int *)NULL){
         return(0);
     }
 
-    strncpy(sh_ptr, "i am a test program", BLOCK_SIZE);
+    sh_ptr[0] = 7354;
+    sh_ptr[1] = 11111195;
     
     shmctl(key, IPC_RMID, NULL);
 

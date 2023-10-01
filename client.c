@@ -8,12 +8,13 @@ int main(int argc, char** argv[]){
         return(0);
     }
 
-    char* sh_ptr = create_shared_ptr(key);
-    if(sh_ptr == (char *)0){
+    int* sh_ptr = create_shared_ptr(key);
+    if(sh_ptr == (int *)NULL){
         return(0);
     }
 
-    printf("%s\n", sh_ptr);
+    printf("%d\n", sh_ptr[0]);
+    printf("%d\n", sh_ptr[1]);
 
     shmctl(key, IPC_RMID, NULL);
 
