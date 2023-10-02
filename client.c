@@ -3,7 +3,7 @@
 
 int main(int argc, char** argv[]){
 
-    struct data{
+    struct client_data{
         unsigned long number;
         char text[32];
         char* str_ptr;
@@ -33,6 +33,7 @@ int main(int argc, char** argv[]){
         }
 
         printf("%ld\n", user_input.number);
+        
         
 
     }
