@@ -3,19 +3,57 @@
 
 int main(int argc, char** argv[]){
 
-    key_t key = get_file_key();
-    if(key == 0){
+    struct data_buffer{
+        unsigned long num;
+        char text[32];
+        char* ptr;
+    } buffer;
+
+    // configure share memory file keys
+    key_t number_key = get_file_key((char*)"number.key");
+    key_t flag_key = get_file_key((char*)"flag.key");
+    if(number_key == 0){
+        return(0);
+    }
+    if(flag_key == 0){
         return(0);
     }
 
-    unsigned long* sh_ptr = create_shared_ptr(key);
-    if(sh_ptr == (unsigned long*)NULL){
+    // configure shared memory pointers
+    unsigned long* numbers = create_shared_number_ptr(number_key);
+    char* flags = create_shared_flag_ptr(flag_key);
+    if(numbers == (unsigned long*)NULL){
         return(0);
     }
 
-    
+    if(flags == ((char*)NULL)){
+        return(0);
+    }
 
-    shmctl(key, IPC_RMID, NULL);
+
+    // runtime loop
+    while(1){
+        printf("Please enter a number to be factorised: ");
+        scanf("%s", buffer.text);
+        buffer.num = strtoul(buffer.text, &buffer.ptr, 10);
+
+        printf("%ld\n", buffer.num);
+
+
+        flags[0] = 'y';
+        sleep(1);
+        if(flags[0] == 'y'){
+            flags[0] = 'n';
+            printf("Server is busy, try again..\n\n");
+        }
+
+    }
+
+    //numbers[0-9]
+    //flags[0-10]    
+
+    shmctl(number_key, IPC_RMID, NULL);
+    shmctl(flag_key, IPC_RMID, NULL);
 
     return(0);
 }

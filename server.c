@@ -4,19 +4,30 @@
 
 int main(int argc, char** argv[]){
 
-    key_t key = get_file_key();
-    if(key == 0){
+    // configure share memory file keys
+    key_t number_key = get_file_key((char*)"number.key");
+    key_t flag_key = get_file_key((char*)"flag.key");
+    if(number_key == 0){
+        return(0);
+    }
+    if(flag_key == 0){
         return(0);
     }
 
-    unsigned long* sh_ptr = create_shared_ptr(key);
-    if(sh_ptr == (unsigned long*)NULL){
+    // configure shared memory pointers
+    unsigned long* numbers = create_shared_number_ptr(number_key);
+    char* flags = create_shared_flag_ptr(flag_key);
+    if(numbers == (unsigned long*)NULL){
         return(0);
     }
 
+    if(flags == ((char*)NULL)){
+        return(0);
+    }
     
     
-    shmctl(key, IPC_RMID, NULL);
+    shmctl(number_key, IPC_RMID, NULL);
+    shmctl(flag_key, IPC_RMID, NULL);
 
     return(0);
 }
