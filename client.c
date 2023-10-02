@@ -8,14 +8,13 @@ int main(int argc, char** argv[]){
         return(0);
     }
 
-    int* sh_ptr = create_shared_ptr(key);
-    if(sh_ptr == (int *)NULL){
+    unsigned long* sh_ptr = create_shared_ptr(key);
+    if(sh_ptr == (unsigned long*)NULL){
         return(0);
     }
 
-    printf("%d\n", sh_ptr[0]);
-    printf("%d\n", sh_ptr[1]);
-    printf("%ld\n", sizeof(int)*11);
+    printf("%ld\n", sh_ptr[0]);
+    printf("%ld\n", sh_ptr[1]);
 
     shmctl(key, IPC_RMID, NULL);
 
