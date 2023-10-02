@@ -1,6 +1,6 @@
 #include "shm_func.h"
 
-extern const size_t MEM_SIZE = sizeof(unsigned long)* 11;
+const size_t MEM_SIZE = sizeof(unsigned long)* 11;
 
 key_t get_file_key(){
     key_t key = ftok("sh_mem.key", 0);
