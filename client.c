@@ -48,10 +48,8 @@ int main(int argc, char** argv[]){
         }
 
     }
-
-    //numbers[0-9]
-    //flags[0-10]    
-
+ 
+    // memory destructor
     shmctl(number_key, IPC_RMID, NULL);
     shmctl(flag_key, IPC_RMID, NULL);
 

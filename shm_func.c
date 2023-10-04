@@ -6,7 +6,9 @@ const size_t MEM_SIZE_FLAGS = sizeof(char) * 11;
 key_t get_file_key(char* key_string){
     key_t key = ftok(key_string, 0);
     if(key == -1){
-        printf("Error reading key file\n");
+        printf("Error reading");
+        printf(" %s ", key_string);
+        printf("key file\n");
         return(0);
     }
     return(key);
