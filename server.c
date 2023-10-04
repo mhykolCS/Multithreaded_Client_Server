@@ -1,59 +1,49 @@
 #include "shm_func.h"
 #include <pthread.h>
 #include <stdbool.h>
+#include <stdlib.h>
 
 
 struct thread_data{
     int index;
-    int count;
-    unsigned long* number;
-    char* flag;
+    unsigned long number;
+    unsigned long* shared_numbers;
+    char* shared_flags;
     bool active;
+    unsigned long bit_shifted_number[32];
 };
 /*
 have two simultaneous functions using a shared array to pass factors back to client in real time
 */
 
-
-// returns the amount of binary digits in the unsigned long
-int binary_count(unsigned long num){
-    int temp = num;
-    int count = 0;
-    for (count; temp > 0; temp >>= 1){
-        count++;
-    }
-
-    return(count);
-
-}
-
-int right_rotation(int num, unsigned int shift){
-    return (num >> shift) | (num << 32 - shift);
+unsigned long rotate_bits_right(unsigned long num, unsigned int shift){
+    unsigned long result = (unsigned long)((num >> shift) | (num << 64 - shift));
+    return(result);
 }
 
 
 // uses trial division factor method to locate factors, and places them into ptr array 
-void* factorise(void* arg){
+void* factorise_all_rotated_bits(void* arg){
 
     struct thread_data *thread;
     thread = (struct thread_data *) arg;
 
-    printf("Index: %d\n", thread->index);
-    printf("Count: %d\n", thread->count);
-    printf("Number: %ld\n", *thread->number);
-    printf("Flag: %s\n\n", thread->flag);  
+    printf("Starting Number: %lu\n", thread->number);
 
-    *thread->flag = 'n';
-    thread->active = false;
+    for(int i = 0; i < 32; i++){
+        printf("Rotated %i bits: %lu\n", i, thread->bit_shifted_number[i]);
+    }   
 
+
+    printf("\n\n");
     return(NULL);
 }
 
 int main(int argc, char** argv[]){
 
-    pthread_t thread1;
+    pthread_t pthread[10];
 
-    struct thread_data threads;
+    struct thread_data threads[10];
 
     // configure share memory file keys
     key_t number_key = get_file_key((char*)"number.key");
@@ -79,17 +69,31 @@ int main(int argc, char** argv[]){
 
     // runtime loop
     while(1){
-        if(flags[0] == 'y' && !threads.active){
-            threads.index = 0;
-            threads.count = binary_count(numbers[0]);
-            threads.number = &numbers[0];
-            threads.flag = &flags[0];
-            if(!threads.active){
-                threads.active = true;
-                pthread_create(&thread1, NULL, factorise, (void *)&threads);
-                sleep(1);
-            }    
+ 
+        if(flags[0] == 'y'){
+            for(int i = 1; i < 10; i++){
+                if(flags[0] == 'n'){continue;}
+
+                if(threads[i].active == false){
+                    threads[i].active = true;
+                    threads[i].index = i;
+                    threads[i].number = numbers[0];
+                    threads[i].shared_numbers = numbers;
+                    threads[i].shared_flags = flags;
+                    for(int j = 0; j < 32; j++){
+                        threads[i].bit_shifted_number[j] = rotate_bits_right(threads[i].number, j);
+                    }
+                    numbers[0] = i;
+                    flags[0] = 'n';
+
+                    pthread_create(&pthread[i], NULL, factorise_all_rotated_bits, (void*)&threads[i]);
+
+                    sleep(1);
+
+                }
+            }
         }
+
     }
 
     
