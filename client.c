@@ -39,7 +39,7 @@ int main(int argc, char** argv[]){
 
         printf("%ld\n", buffer.num);
 
-
+        numbers[0] = buffer.num;
         flags[0] = 'y';
         sleep(1);
         if(flags[0] == 'y'){

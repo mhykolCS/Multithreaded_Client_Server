@@ -25,6 +25,15 @@ int main(int argc, char** argv[]){
         return(0);
     }
     
+
+
+    while(1){
+        if(flags[0] == 'y'){
+            printf("%ld\n", numbers[0]);
+            flags[0] = 'n';
+        }
+    }
+
     
     shmctl(number_key, IPC_RMID, NULL);
     shmctl(flag_key, IPC_RMID, NULL);
