@@ -2,10 +2,12 @@
 #include <pthread.h>
 #include <stdbool.h>
 #include <stdlib.h>
+#include <math.h>
 
 
 struct thread_data{
     int index;
+    int bit_index;
     unsigned long number;
     unsigned long* shared_numbers;
     char* shared_flags;
@@ -22,20 +24,44 @@ unsigned long rotate_bits_right(unsigned long num, unsigned int shift){
 }
 
 
+void* factorise(void* arg){
+
+    struct thread_data *thread;
+    thread = (struct thread_data *) arg;
+
+    int bit_index = thread->bit_index;
+    unsigned long bit_shifted_number = thread->bit_shifted_number[bit_index];
+    unsigned long square = sqrt(bit_shifted_number);
+
+    
+    for(unsigned long i = 2; i < square; i++){
+        if(bit_shifted_number % i == 0){
+            printf("%i, %lu, %.2f\n", bit_index, i, (float)i / square);
+        }
+    }
+    
+    
+    return(NULL);
+}
+
 // uses trial division factor method to locate factors, and places them into ptr array 
 void* factorise_all_rotated_bits(void* arg){
 
     struct thread_data *thread;
     thread = (struct thread_data *) arg;
 
-    printf("Starting Number: %lu\n", thread->number);
+    pthread_t pthreads[32];
 
     for(int i = 0; i < 32; i++){
-        printf("Rotated %i bits: %lu\n", i, thread->bit_shifted_number[i]);
-    }   
+        thread->bit_index = i;
+        pthread_create(&pthreads[i], NULL, factorise, arg);
+        
+    }
 
+    for(int i = 0; i < 32; i++){
+        pthread_join(pthreads[i], NULL);
+    }
 
-    printf("\n\n");
     return(NULL);
 }
 

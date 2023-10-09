@@ -44,7 +44,15 @@ int main(int argc, char** argv[]){
         sleep(1);
         if(flags[0] == 'y'){
             flags[0] = 'n';
+            printf("\x1b[1F"); // Move to beginning of previous line
+            printf("\x1b[1F"); // Move to beginning of previous line
+            printf("\x1b[2K"); // Clear entire line
+            printf("\n");
+            printf("\x1b[2K"); // Clear entire line
+            printf("\x1b[1F"); // Move to beginning of previous line
+            
             printf("Server is busy, try again..\n\n");
+            
         }
 
     }
