@@ -14,9 +14,15 @@ struct thread_data{
     bool active;
     unsigned long bit_shifted_number[32];
 };
-/*
-have two simultaneous functions using a shared array to pass factors back to client in real time
-*/
+
+struct multithread_data{
+    int index;
+    int bit_index;
+    unsigned long bit_shifted_number;
+    unsigned long* shared_numbers;
+    char* shared_flags;
+};
+
 
 unsigned long rotate_bits_right(unsigned long num, unsigned int shift){
     unsigned long result = (unsigned long)((num >> shift) | (num << 64 - shift));
@@ -25,12 +31,11 @@ unsigned long rotate_bits_right(unsigned long num, unsigned int shift){
 
 
 void* factorise(void* arg){
-
-    struct thread_data *thread;
-    thread = (struct thread_data *) arg;
+    struct multithread_data *thread;
+    thread = (struct multithread_data *) arg;
 
     int bit_index = thread->bit_index;
-    unsigned long bit_shifted_number = thread->bit_shifted_number[bit_index];
+    unsigned long bit_shifted_number = thread->bit_shifted_number;
     unsigned long square = sqrt(bit_shifted_number);
 
     
@@ -51,15 +56,18 @@ void* factorise_all_rotated_bits(void* arg){
     thread = (struct thread_data *) arg;
 
     pthread_t pthreads[32];
+    struct multithread_data multithreads[32];
 
     for(int i = 0; i < 32; i++){
-        thread->bit_index = i;
-        pthread_create(&pthreads[i], NULL, factorise, arg);
-        
+        multithreads[i].index = thread->index;
+        multithreads[i].bit_index = i;
+        multithreads[i].bit_shifted_number = thread->bit_shifted_number[i];
+        multithreads[i].shared_flags = thread->shared_flags;
+        multithreads[i].shared_numbers = thread->shared_numbers;
     }
 
     for(int i = 0; i < 32; i++){
-        pthread_join(pthreads[i], NULL);
+        pthread_create(&pthreads[i], NULL, factorise, (void*)&multithreads[i]);
     }
 
     return(NULL);
@@ -113,8 +121,6 @@ int main(int argc, char** argv[]){
                     flags[0] = 'n';
 
                     pthread_create(&pthread[i], NULL, factorise_all_rotated_bits, (void*)&threads[i]);
-
-                    sleep(1);
 
                 }
             }
