@@ -1,9 +1,9 @@
 #include "shm_func.h"
-#include <pthread.h>
 #include <stdbool.h>
 #include <stdlib.h>
 #include <math.h>
 
+pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
 
 struct thread_data{
     int index;
@@ -40,8 +40,24 @@ void* factorise(void* arg){
 
     
     for(unsigned long i = 2; i < square; i++){
+        if(bit_index > 32 || bit_index < -1){
+            i--;
+            continue;
+        }
+        if(thread->index > 11 || thread->index < 0){
+            i--;
+            continue;
+        }
         if(bit_shifted_number % i == 0){
-            printf("%i, %lu, %.2f\n", bit_index, i, (float)i / square);
+            printf("Index: %i, BitIndex: %i, Factor: %lu, Percentage: %.2f%%\n", thread->index, thread->bit_index, i, (float)i / square);
+            pthread_mutex_lock(&lock);
+            while(thread->shared_flags[thread->index] == 'f'){
+                continue;
+            }
+
+            thread->shared_numbers[thread->index] = i;
+            thread->shared_flags[thread->index] = 'f';
+            pthread_mutex_unlock(&lock);
         }
     }
     
@@ -54,12 +70,13 @@ void* factorise_all_rotated_bits(void* arg){
 
     struct thread_data *thread;
     thread = (struct thread_data *) arg;
+    int thread_index = thread->index;
 
     pthread_t pthreads[32];
     struct multithread_data multithreads[32];
 
     for(int i = 0; i < 32; i++){
-        multithreads[i].index = thread->index;
+        multithreads[i].index = thread_index;
         multithreads[i].bit_index = i;
         multithreads[i].bit_shifted_number = thread->bit_shifted_number[i];
         multithreads[i].shared_flags = thread->shared_flags;
@@ -77,7 +94,7 @@ int main(int argc, char** argv[]){
 
     pthread_t pthread[10];
 
-    struct thread_data threads[10];
+    struct thread_data threads[11];
 
     // configure share memory file keys
     key_t number_key = get_file_key((char*)"number.key");
@@ -104,9 +121,9 @@ int main(int argc, char** argv[]){
     // runtime loop
     while(1){
  
-        if(flags[0] == 'y'){
-            for(int i = 1; i < 10; i++){
-                if(flags[0] == 'n'){continue;}
+        if(flags[0] == 'f'){
+            for(int i = 1; i <= 10; i++){
+                if(flags[0] == 'e'){continue;}
 
                 if(threads[i].active == false){
                     threads[i].active = true;
@@ -118,7 +135,7 @@ int main(int argc, char** argv[]){
                         threads[i].bit_shifted_number[j] = rotate_bits_right(threads[i].number, j);
                     }
                     numbers[0] = i;
-                    flags[0] = 'n';
+                    flags[0] = 'e';
 
                     pthread_create(&pthread[i], NULL, factorise_all_rotated_bits, (void*)&threads[i]);
 
